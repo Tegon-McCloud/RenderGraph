@@ -13,6 +13,11 @@ void RenderGraphBuilder::addPass(GraphRenderPass&& pass)
     passes.emplace_back(std::move(pass));
 }
 
+RenderGraph RenderGraphBuilder::compile() const
+{
+    return RenderGraph();
+}
+
 GraphResourceMut::GraphResourceMut(uint32_t index) :
     index(index)
 {}
@@ -29,4 +34,3 @@ GraphResourceMut::GraphResourceMut(uint32_t index) :
 //
 //    return *this;
 //}
-

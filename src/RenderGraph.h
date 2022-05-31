@@ -12,7 +12,7 @@ struct GraphResourceRef {
 	friend class RenderGraphBuilder;
 private:
 	GraphResourceRef(uint32_t index);
-
+	
 public:
 
 private:
@@ -20,6 +20,7 @@ private:
 };
 
 struct GraphResourceMut {
+	friend class GraphResourceRef;
 	friend class RenderGraphBuilder;
 private:
 	GraphResourceMut(uint32_t index);
@@ -62,16 +63,27 @@ protected:
 	std::vector<WriteDependency> writes;
 };
 
+class RenderGraph {
+public:
+
+
+private:
+	std::vector<GraphRenderPass> passes;
+
+};
 
 class RenderGraphBuilder {
 public:
+	RenderGraphBuilder() = default;
+
 	GraphResourceMut declareResource(GraphResource&& resource);
 	void addPass(GraphRenderPass&& pass);
 
-	void compile();
+	RenderGraph compile() const;
 
 private:
 	std::vector<GraphRenderPass> passes;
 	std::vector<GraphResource> resources;
 
 };
+

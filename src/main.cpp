@@ -3,10 +3,13 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include "RenderGraph.h"
+#include "Resource.h"
+
 int main() {
-	vk::InstanceCreateInfo createInfo = {};
 	
-	vk::Device device;
+	RenderGraphBuilder graphBuilder;
+
 
 
 	return 0;
