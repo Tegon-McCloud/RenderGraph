@@ -8,82 +8,64 @@
 
 #include "Resource.h"
 
-struct GraphResourceRef {
-	friend class RenderGraphBuilder;
-private:
-	GraphResourceRef(uint32_t index);
-	
-public:
+using GraphResourceRef = uint32_t;
 
-private:
-	uint32_t index;
-};
+//enum class DependencyFlags : uint32_t {
+//	eReadStorageBuffer  = 1 << 0,
+//	eReadUniformBuffer  = 1 << 1,
+//	eWriteRenderTarget  = 1 << 2,
+//	eWriteStorageBuffer = 1 << 3,
+//};
 
-struct GraphResourceMut {
-	friend class GraphResourceRef;
-	friend class RenderGraphBuilder;
-private:
-	GraphResourceMut(uint32_t index);
-
-public:
-	/*GraphResourceMut(const GraphResourceMut&) = delete;
-	GraphResourceMut(GraphResourceMut&&);
-	GraphResourceMut& operator=(const GraphResourceMut&) = delete;
-	GraphResourceMut& operator=(GraphResourceMut&&);*/
-
-private:
-	uint32_t index;
-};
-
-struct GraphResource {
-	ResourceType type;
-	union {
-		vk::ImageCreateInfo image;
-		vk::BufferCreateInfo buffer;
-	};
-	std::function<Resource()> external;
-};
-
-struct ReadDependency {
+struct Dependency {
 	GraphResourceRef resource;
-	vk::ShaderStageFlags readStages;
+	union {
+		vk::ImageUsageFlags texture;
+		vk::BufferUsageFlags buffer;
+	} usage;
 };
 
-struct WriteDependency {
-	GraphResourceMut resource;
+struct RenderPass {
+	virtual void execute() const = 0;
+	std::vector<Dependency> dependencies;
 };
 
-class GraphRenderPass {
-	friend class RenderGraphBuilder;
+
+struct ResourceRegistry {
 public:
-	virtual void execute() = 0;
+	ResourceRegistry(const std::vector<std::shared_ptr<RenderPass>>& passes, const std::vector<ResourceDesc>& descs);
 
-protected:
-	std::vector<ReadDependency> reads;
-	std::vector<WriteDependency> writes;
+	Resource getResource(GraphResourceRef ref) const;
+
+private:
+
+
+private:
+	std::vector<Resource> resources;
+	std::vector<vk::DeviceMemory> memory;
 };
 
 class RenderGraph {
 public:
+	RenderGraph(std::vector<std::shared_ptr<RenderPass>> passes, const std::vector<ResourceDesc>& resources);
 
+	void execute() const;
 
 private:
-	std::vector<GraphRenderPass> passes;
-
+	std::vector<RenderPass> passes;
+	ResourceRegistry registry;
 };
 
 class RenderGraphBuilder {
 public:
 	RenderGraphBuilder() = default;
 
-	GraphResourceMut declareResource(GraphResource&& resource);
-	void addPass(GraphRenderPass&& pass);
+	void addPass(RenderPass&& pass);
 
 	RenderGraph compile() const;
 
 private:
-	std::vector<GraphRenderPass> passes;
-	std::vector<GraphResource> resources;
-
+	std::vector<std::shared_ptr<RenderPass>> passes;
+	std::vector<ResourceDesc> resources;
 };
 
