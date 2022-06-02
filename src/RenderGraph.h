@@ -10,16 +10,15 @@
 
 using GraphResourceRef = uint32_t;
 
-//enum class DependencyFlags : uint32_t {
-//	eReadStorageBuffer  = 1 << 0,
-//	eReadUniformBuffer  = 1 << 1,
-//	eWriteRenderTarget  = 1 << 2,
-//	eWriteStorageBuffer = 1 << 3,
-//};
-
 struct Dependency {
+	Dependency(GraphResourceRef resource, vk::ImageUsageFlags usage);
+	Dependency(GraphResourceRef resource, vk::BufferUsageFlags usage);
+	
 	GraphResourceRef resource;
-	union {
+	union UsageFlags {
+		UsageFlags(vk::ImageUsageFlags usage) : texture(usage) {};
+		UsageFlags(vk::BufferUsageFlags usage) : buffer(usage) {};
+
 		vk::ImageUsageFlags texture;
 		vk::BufferUsageFlags buffer;
 	} usage;
@@ -35,10 +34,12 @@ struct ResourceRegistry {
 public:
 	ResourceRegistry(const std::vector<std::shared_ptr<RenderPass>>& passes, const std::vector<ResourceDesc>& descs);
 
-	Resource getResource(GraphResourceRef ref) const;
-
+	const Resource& getResource(GraphResourceRef ref) const;
+	
 private:
-
+	Resource createResource(ResourceDesc desc) const;
+	Resource createTexture(vk::ImageCreateInfo desc) const;
+	Resource createBuffer(vk::BufferCreateInfo desc) const;
 
 private:
 	std::vector<Resource> resources;
@@ -60,7 +61,7 @@ class RenderGraphBuilder {
 public:
 	RenderGraphBuilder() = default;
 
-	void addPass(RenderPass&& pass);
+	void addPass(std::shared_ptr<RenderPass> pass);
 
 	RenderGraph compile() const;
 

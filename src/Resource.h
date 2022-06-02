@@ -13,9 +13,12 @@ enum class ResourceType : uint32_t {
 };
 
 struct Resource {
+	Resource(vk::Image texture);
+	Resource(vk::Buffer buffer);
+
 	ResourceType type;
 	union {
-		vk::Image image;
+		vk::Image texture;
 		vk::Buffer buffer;
 	};
 };

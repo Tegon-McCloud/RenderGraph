@@ -5,14 +5,33 @@
 
 #include "RenderGraph.h"
 #include "Resource.h"
+#include "RenderContext.h"
+
+struct LambertianPass : public RenderPass {
+
+	LambertianPass(GraphResourceRef renderTarget, GraphResourceRef depthTexture) :
+		renderTarget(renderTarget)
+	{
+		dependencies.emplace_back(renderTarget, vk::ImageUsageFlagBits::eColorAttachment);
+		dependencies.emplace_back(depthTexture, vk::ImageUsageFlagBits::eDepthStencilAttachment);
+	}
+
+	void execute() const override
+	{
+		
+
+	}
+
+	GraphResourceRef renderTarget;
+	GraphResourceRef depthTexture;
+};
 
 int main() {
 	
+	RenderContext context;
+
 	RenderGraphBuilder graphBuilder;
 
-	RenderPass pass;
-	pass.reads.push_back(ReadDependency())
-
-
+	
 	return 0;
 }
